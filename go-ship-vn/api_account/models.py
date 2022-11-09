@@ -47,7 +47,7 @@ class User(models.Model):
     distance_view= models.IntegerField(default=10)
 
 class Shipper(models.Model):
-    user_id = models.OneToOneField(
+    shipper_id = models.OneToOneField(
         Account, 
         on_delete=models.CASCADE, 
         primary_key=True)
