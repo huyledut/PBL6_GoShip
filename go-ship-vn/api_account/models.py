@@ -1,5 +1,4 @@
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 import time
 
 
@@ -15,7 +14,7 @@ class Account(models.Model):
     token_device = models.CharField(max_length=255, null= True, blank=True)
     created_at = models.DateTimeField(db_index=True, auto_now_add=True)
     updated_at = models.DateTimeField(db_index=True, auto_now=True)
-
+    
     class Meta:
         db_table = 'Account'
         ordering = ['created_at']
@@ -23,15 +22,12 @@ class Account(models.Model):
         return self.phone_number
 
 
-class Location(models.Model):
+class Address(models.Model):
+    address_notes = models.CharField(max_length= 255, null = True, blank=True, default="")
     latitude = models.CharField(max_length=255)
     longitude = models.CharField(max_length=255)
-
-
-class Address(models.Model):
-    address_notes = models.CharField(max_length= 255)
-    location = models.ForeignKey(Location, related_name='Location', null=True, on_delete=models.CASCADE)
-
+    def __str__(self):
+        return self.address_notes 
 
 class User(models.Model):
     user_id = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
@@ -62,7 +58,8 @@ class Shipper(models.Model):
         Address, 
         on_delete=models.CASCADE,
         null =True)
-    location = models.OneToOneField(Location, on_delete=models.CASCADE,null =True) 
+    latitude = models.CharField(max_length=255, null=True, blank= True)
+    longitude = models.CharField(max_length=255, null=True, blank= True)
     list_confirmed =(
         (0,'UnConfirm'),
         (1,'Confirming'),

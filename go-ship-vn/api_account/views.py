@@ -4,8 +4,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate, login as auth_login, logout
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountSerializer
-from api_account.models import Account
+from .serializers import AccountSerializer, ConfirmShipperSerializer, ShipperSerializer, AddressSerializer
+from api_account.models import Account, Shipper, Address
 from rest_framework_simplejwt.tokens import RefreshToken
 from twilio.rest import  Client
 from rest_framework.views import APIView 
@@ -23,6 +23,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import authentication, permissions
+from .permissions import *
 # Create your views here.
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -47,6 +48,7 @@ class RegisterViewSet(viewsets.ViewSet, generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([])
@@ -65,7 +67,7 @@ def login_view(request):
             }
             return Response(response)
 
-    return Response({"details": "Invalid username/password"}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"details": "Số điện thoại hoặc mật khẩu không hợp lệ!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Account_OTP(APIView):
@@ -75,9 +77,9 @@ class Account_OTP(APIView):
             phone_number = request.data.get("phone_number")
             otp = request.data.get("otp")
             account_sid = 'AC69e64d1e3a974b090a6b8d4d2b2bc08d'
-            auth_token = 'd42b4486b2488ae41f7823b2819b7c89'
+            auth_token = 'kl'
             client = Client(account_sid, auth_token)
-
+ 
             message = client.messages.create(
                 messaging_service_sid='MG1e5faf909efa83f4c72531147bd4e6d8',
                 body='GoShip: Mã xác thực OTP của bạn là ' + otp,
@@ -98,9 +100,37 @@ class Account_OTP(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(data={
-                'status': 'Phone number is invalid',
+                'status': 'Số điện thoại không hợp lệ!',
                 'except': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ConfirmShipper(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        address = Address.objects.create(**request.data.get('address'))
+        address.save()
+        account = Account.objects.get(pk= phone_number)
+        shipper = Shipper.objects.get(pk=account)
+        shipper.gender = request.data.get('gender')
+        shipper.name = request.data.get('name')
+        shipper.url_identification_top = request.data.get('url_identification_top')
+        shipper.url_identification_back = request.data.get('url_identification_back')
+        shipper.url_identification_info = request.data.get('url_identification_info')
+        shipper.url_face_video = request.data.get('url_face_video')
+        shipper.address = address
+        shipper.save()
+        data = ShipperSerializer(shipper)
+        return Response(data = {
+            'status': 'Success',
+            'shipper':data.data,
+            'address': AddressSerializer(address).data
+        },
+        status = status.HTTP_200_OK)
 
+
+class ShipperViewSet(viewsets.ModelViewSet):
+    queryset = Shipper.objects.all()
+    serializer_class = ShipperSerializer
+    permission_classes= (ShipperPermission,)

@@ -28,8 +28,7 @@ schema_view = swagger_get_schema_view(
     patterns=[
         path('api/v1/', include('api_account.urls')),
         path(r'api-auth/', include('rest_framework.urls')),
-        # path(r'api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-        # path(r'api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     ]
 )
 urlpatterns = [
@@ -37,6 +36,5 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/', include('api_account.urls')),
     path('api-auth/', include('rest_framework.urls')),
-    # path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 ]

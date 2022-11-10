@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account,User, Shipper
+from .models import Account,User, Shipper, Address
 import time
 
 from django.contrib.auth.hashers import make_password
@@ -25,8 +25,30 @@ class AccountSerializer(serializers.ModelSerializer):
             user.save()
             print('Tao user')
         elif validated_data['role'] == 2:
-            name_default = 'User' + str(text_time)[:10]
+            name_default = 'Shipper' + str(text_time)[:10]
             shipper = Shipper.objects.create(shipper_id=account, name = name_default)          
             shipper.save()
             print('Tao shipper')
         return account
+
+
+class ConfirmShipperSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipper
+        fields = ['gender','address', 'name','url_identification_top','url_identification_back','identification_info','url_face_video']
+        
+class ShipperSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipper
+        fields = '__all__'
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+
+class ShipperSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipper
+        fields = '__all__'
