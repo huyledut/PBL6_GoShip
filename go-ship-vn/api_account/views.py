@@ -46,7 +46,24 @@ class RegisterViewSet(viewsets.ViewSet, generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        phone_number = request.data.get("phone_number")
+        password = request.data.get("password")
+        account = Account.objects.filter(Q(phone_number=phone_number))
+        if account.exists():
+            account = account.first()
+            if check_password(password, account.password):
+                token = MyTokenObtainPairSerializer.get_token(account)
+                response = {
+                    'role': account.role,
+                    'phone_number': account.phone_number,
+                    'access_token': str(token),
+                    "details": "Đăng ký thành công!"
+                }
+                return Response(response,  status=status.HTTP_202_ACCEPTED)
+        return Response(
+            {
+               "details": "Tài khoản đã tồn tại!"
+            }, status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
 
 @api_view(["POST"])
@@ -64,9 +81,9 @@ def login_view(request):
                 'role': account.role,
                 'phone_number': account.phone_number,
                 'access_token': str(token),
+                "details": "Đăng nhập thành công!"
             }
-            return Response(response)
-
+            return Response(response,  status=status.HTTP_202_ACCEPTED)
     return Response({"details": "Số điện thoại hoặc mật khẩu không hợp lệ!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -125,7 +142,8 @@ class ConfirmShipper(APIView):
         return Response(data = {
             'status': 'Success',
             'shipper':data.data,
-            'address': AddressSerializer(address).data
+            'address': AddressSerializer(address).data,
+            "details": "Đăng nhập thành công!"
         },
         status = status.HTTP_200_OK)
 
