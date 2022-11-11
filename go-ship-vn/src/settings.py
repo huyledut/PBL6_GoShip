@@ -49,8 +49,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     # module
-    'api_account',
-
+    'api_account'
 ]
 
 REST_FRAMEWORK = {
