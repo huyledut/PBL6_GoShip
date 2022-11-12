@@ -4,10 +4,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate, login as auth_login, logout
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import AccountSerializer, ConfirmShipperSerializer, ShipperSerializer, AddressSerializer
-from api_account.models import Account, Shipper, Address
+from .serializers import AccountSerializer, ConfirmShipperSerializer, ShipperSerializer, AddressSerializer, UserSerializer
+from api_account.models import Account, Shipper, Address, User
 from rest_framework_simplejwt.tokens import RefreshToken
 from twilio.rest import  Client
+import jwt
 from rest_framework.views import APIView 
 from rest_framework.decorators import (
     api_view,
@@ -148,7 +149,39 @@ class ConfirmShipper(APIView):
         status = status.HTTP_200_OK)
 
 
-class ShipperViewSet(viewsets.ModelViewSet):
-    queryset = Shipper.objects.all()
-    serializer_class = ShipperSerializer
-    permission_classes= (ShipperPermission,)
+class ShipperViewSet(APIView):
+    permission_classes = [ShipperPermission]
+    def get(self, request):
+        payload = jwt.decode(jwt=request.headers.get('Token'), key=settings.SECRET_KEY, algorithms=['HS256'])
+        account = Account.objects.get(pk = payload['phone_number'])
+        shipper= Shipper.objects.get(pk =account)    
+        serializer = ShipperSerializer(shipper)
+        return Response(data={
+            'shipper': serializer.data,
+            'address': AddressSerializer(shipper.address).data
+        }, status=status.HTTP_200_OK)
+
+class UserViewSet(APIView):
+    permission_classes = [UserPermission]
+    def get(self, request):
+        payload = jwt.decode(jwt=request.headers.get('Token'), key=settings.SECRET_KEY, algorithms=['HS256'])
+        account = Account.objects.get(pk = payload['phone_number'])
+        user= User.objects.get(pk =account)    
+        serializer = UserSerializer(user)
+        return Response(data={
+            'user': serializer.data,
+            'address': AddressSerializer(user.address).data
+        }, status=status.HTTP_200_OK)
+
+class CheckAccount(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        phone_number = request.data['phone_number'] 
+        account = Account.objects.filter(pk=phone_number)
+        if account.exists():
+            return Response(data={
+               'status': 'Số điện thoại đã được sử dụng!',
+            }, status=status.HTTP_200_OK)
+        return Response(data={
+               'status': 'Số điện thoại chưa sử dụng!',
+            }, status=status.HTTP_200_OK)

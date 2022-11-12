@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account,User, Shipper, Address
+from .models import Account,User, Shipper, Address, User
 import time
 
 from django.contrib.auth.hashers import make_password
@@ -52,3 +52,9 @@ class ShipperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipper
         fields = '__all__'
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+

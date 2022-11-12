@@ -57,7 +57,8 @@ class Shipper(models.Model):
     address = models.OneToOneField(
         Address, 
         on_delete=models.CASCADE,
-        null =True)
+        null =True,
+        )
     latitude = models.CharField(max_length=255, null=True, blank= True)
     longitude = models.CharField(max_length=255, null=True, blank= True)
     list_confirmed =(

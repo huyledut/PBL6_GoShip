@@ -18,7 +18,7 @@ class ShipperPermission(BasePermission):
             return True
         return False
 
-class CustomerPermission(BasePermission):
+class UserPermission(BasePermission):
     def has_permission(self, request, view):
         token = request.headers.get('Token')
         payload = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
