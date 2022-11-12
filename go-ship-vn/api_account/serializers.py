@@ -49,12 +49,21 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class ShipperSerializer(serializers.ModelSerializer):
+    address = AddressSerializer(required=True)
+
     class Meta:
         model = Shipper
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+    address = AddressSerializer(required=True)
+
     class Meta:
         model = User
         fields = '__all__'
+        
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['phone_number', 'password']
 
