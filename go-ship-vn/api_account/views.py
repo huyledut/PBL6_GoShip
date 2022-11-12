@@ -19,7 +19,7 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Q
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from .permissions import *
 
@@ -68,6 +68,7 @@ class RegisterViewSet(viewsets.ViewSet, generics.CreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST, headers=headers)
 
 
+@swagger_auto_schema(request_body=LoginSerializer)
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     serializer = LoginSerializer
@@ -144,16 +145,11 @@ class ConfirmShipper(APIView):
         shipper.url_identification_info = request.data.get(
             'url_identification_info')
         shipper.url_face_video = request.data.get('url_face_video')
+        shipper.confirmed = 1
         shipper.address = address
         shipper.save()
         data = ShipperSerializer(shipper)
-        return Response(data={
-            'status': 'Success',
-            'shipper': data.data,
-            'address': AddressSerializer(address).data,
-            "details": "Đăng nhập thành công!"
-        },
-            status=status.HTTP_200_OK)
+        return Response(data=data.data, status=status.HTTP_200_OK)
 
 
 class ShipperViewSet(APIView):
